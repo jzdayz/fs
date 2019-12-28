@@ -15,7 +15,6 @@
  */
 package io.github.jzdayz.web;
 
-import io.github.jzdayz.template.freemarker.Freemarker;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -181,7 +180,7 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
 //            ao.set(true);
 //            Map<Object,Object> template = new HashMap<>();
 //            template.put("fileName",file.getPath());
-//            byte[] process = Freemarker.process(template, "filel.html");
+//            byte[] process = Freemarker.process(template, "file.html");
 //            HttpUtil.setContentLength(response, process.length);
 //            response.headers().set(HttpHeaderNames.CONTENT_TYPE,"html/txt");
 //            ctx.write(response);
