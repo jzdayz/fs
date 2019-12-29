@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="debc62dd-c8b4-46b4-ab65-a54ca5e23e1a" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/jzdayz/1.http" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/jzdayz/App.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/jzdayz/undertow/A.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -310,7 +308,7 @@
       <workItem from="1577540145972" duration="1228000" />
       <workItem from="1577541393638" duration="1896000" />
       <workItem from="1577543435864" duration="169000" />
-      <workItem from="1577543620715" duration="8294000" />
+      <workItem from="1577543620715" duration="8464000" />
     </task>
     <task id="LOCAL-00001" summary="cn">
       <created>1577545599051</created>
@@ -333,7 +331,14 @@
       <option name="project" value="LOCAL" />
       <updated>1577585766933</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="cn">
+      <created>1577585856149</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1577585856149</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
