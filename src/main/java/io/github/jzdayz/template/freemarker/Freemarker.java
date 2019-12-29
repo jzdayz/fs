@@ -6,7 +6,10 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Map;
 
 public class Freemarker {
@@ -15,7 +18,7 @@ public class Freemarker {
 
     static {
         try {
-            CONFIGURATION.setDirectoryForTemplateLoading(new File(Freemarker.class.getResource("/template").toURI()));
+            CONFIGURATION.setClassLoaderForTemplateLoading(Freemarker.class.getClassLoader(),"/template");
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
