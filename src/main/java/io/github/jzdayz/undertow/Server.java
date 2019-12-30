@@ -7,13 +7,15 @@ import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.util.Headers;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HelloWorldServer {
+public class Server {
 
-    public static void main( String[] args) {
-//        args = new String[]{"20010","/Users/jzdayz/Downloads/aaa"};
+    public static void main( String[] args) throws UnknownHostException {
+//        args = new String[]{"20010","/Users/jzdayz/Downloads"};
         Undertow server = Undertow.builder()
                 .addHttpListener(Integer.parseInt(args[0]), "0.0.0.0")
                 .setHandler(new IPAddressAccessControlHandler(new ResourceHandler(new FileResourceManager(new File(args[1])), exchange -> {
@@ -24,5 +26,7 @@ public class HelloWorldServer {
                 }).setDirectoryListingEnabled(true)).setDefaultAllow(true))
                 .build();
         server.start();
+
+        System.out.println(String.format("http://%s:%s", InetAddress.getLocalHost().getHostAddress(),args[0]));
     }
 }

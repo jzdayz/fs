@@ -39,7 +39,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'io.github.jzdayz.undertow.HelloWorldServer'
+        attributes 'Main-Class': 'io.github.jzdayz.undertow.Server'
     }
 }
 
