@@ -15,7 +15,7 @@ import java.util.Map;
 public class Server {
 
     public static void main( String[] args) throws UnknownHostException {
-//        args = new String[]{"20010","/Users/jzdayz/Downloads"};
+        args = new String[]{"20010","/Users/jzdayz/Desktop"};
         Undertow server = Undertow.builder()
                 .addHttpListener(Integer.parseInt(args[0]), "0.0.0.0")
                 .setHandler(new IPAddressAccessControlHandler(new ResourceHandler(new FileResourceManager(new File(args[1])), exchange -> {

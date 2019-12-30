@@ -27,12 +27,17 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 
+import java.net.InetAddress;
+
 public final class HttpStaticFileServer {
 
     static final boolean SSL = System.getProperty("ssl") != null;
-    static final int PORT = Integer.parseInt(System.getProperty("port", SSL? "8443" : "8080"));
+    static int PORT = Integer.parseInt(System.getProperty("port", SSL? "8443" : "8080"));
 
     public static void main(String[] args) throws Exception {
+
+        PORT = Integer.parseInt(args[0]);
+        System.setProperty("web.basePath",args[1]);
         // Configure SSL.
         final SslContext sslCtx;
         if (SSL) {
@@ -54,9 +59,7 @@ public final class HttpStaticFileServer {
 
             Channel ch = b.bind(PORT).sync().channel();
 
-            System.err.println("Open your web browser and navigate to " +
-                    (SSL? "https" : "http") + "://127.0.0.1:" + PORT + '/');
-
+            System.out.println(String.format("http://%s:%s", InetAddress.getLocalHost().getHostAddress(),args[0]));
             ch.closeFuture().sync();
         } finally {
             bossGroup.shutdownGracefully();
