@@ -26,18 +26,43 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetAddress;
+import java.net.ServerSocket;
 
+
+@Slf4j
 public final class HttpStaticFileServer {
 
     static final boolean SSL = System.getProperty("ssl") != null;
     static int PORT = Integer.parseInt(System.getProperty("port", SSL? "8443" : "8080"));
 
+    private static int randomPort(){
+        int port = 10000;
+        int maxTry = 20000;
+        int tried = 0;
+        boolean gotIt = false;
+        do {
+            try (ServerSocket socket = new ServerSocket(port)) {
+                gotIt = true;
+            } catch (Exception e) {/*ignore*/}
+        }while (!gotIt&&++tried<(maxTry+port));
+        return port;
+    }
+
     public static void main(String[] args) throws Exception {
 
-        PORT = Integer.parseInt(args[0]);
-        System.setProperty("web.basePath",args[1]);
+        if (args.length>0) {
+            PORT = Integer.parseInt(args[0]);
+        }else {
+            PORT = randomPort();
+        }
+        if (args.length>1) {
+            System.setProperty("web.basePath", args[1]);
+        }else{
+            System.setProperty("web.basePath",System.getProperty("user.dir"));
+        }
         // Configure SSL.
         final SslContext sslCtx;
         if (SSL) {
@@ -58,12 +83,12 @@ public final class HttpStaticFileServer {
              .childHandler(new HttpStaticFileServerInitializer(sslCtx));
 
             Channel ch = b.bind(PORT).sync().channel();
-
-            System.out.println(String.format("http://%s:%s", InetAddress.getLocalHost().getHostAddress(),args[0]));
+            log.info("局域网: http://{}:{}",InetAddress.getLocalHost().getHostAddress(),PORT);
             ch.closeFuture().sync();
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
     }
+
 }

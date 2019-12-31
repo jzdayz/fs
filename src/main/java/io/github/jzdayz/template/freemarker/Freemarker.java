@@ -5,6 +5,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Map;
 
+@Slf4j
 public class Freemarker {
 
     private static final Configuration CONFIGURATION = new Configuration(Configuration.VERSION_2_3_22);
@@ -20,7 +22,7 @@ public class Freemarker {
         try {
             CONFIGURATION.setClassLoaderForTemplateLoading(Freemarker.class.getClassLoader(),"/template");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("init freemarker error ",e);
             System.exit(1);
         }
         CONFIGURATION.setDefaultEncoding("UTF-8");

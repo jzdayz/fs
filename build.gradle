@@ -34,6 +34,9 @@ repositories {
 dependencies {
     implementation 'javax.activation:activation:1.1.1'
     implementation 'io.netty:netty-all:4.1.44.Final'
+    implementation 'org.projectlombok:lombok:1.18.10'
+    implementation 'org.slf4j:slf4j-api:2.0.0-alpha1'
+    implementation 'org.slf4j:slf4j-simple:2.0.0-alpha1'
     implementation 'org.freemarker:freemarker:2.3.29'
     implementation 'io.undertow:undertow-core:2.0.28.Final'
 }
@@ -45,7 +48,7 @@ jar {
 }
 
 group = 'io.github.jzdayz'
-version = '2.0'
+version = '2.1'
 sourceCompatibility = '1.8'
 
 publishing {
