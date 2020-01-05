@@ -187,11 +187,10 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
             // Set Response Header
             response.headers().add(HttpHeaderNames.CONTENT_RANGE, HttpHeaderValues.BYTES + " "
                     + partialRequestInfo.startOffset + "-" + partialRequestInfo.endOffset + "/" + fileLength);
-            System.out.println(
-                    HttpHeaderNames.CONTENT_RANGE + " : " + response.headers().get(HttpHeaderNames.CONTENT_RANGE));
+
 
             HttpUtil.setContentLength(response, partialRequestInfo.getChunkSize());
-            System.out.println(HttpHeaders.Names.CONTENT_LENGTH + " : " + partialRequestInfo.getChunkSize());
+
 
             response.setStatus(HttpResponseStatus.PARTIAL_CONTENT);
 
@@ -461,7 +460,7 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
         } catch (NumberFormatException e) {
         }
 
-        endOffset = fileLength - startOffset > MB_10 ? startOffset + MB_10 : fileLength;
+        endOffset = fileLength - startOffset > MB_20 ? startOffset + MB_20 : fileLength;
 
         if (endOffset >= fileLength) {
             endOffset = fileLength - 1;
@@ -474,5 +473,5 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
         return partialRequestInfo;
     }
 
-    private static final long MB_10 = 10 * 1024 * 1024 ;
+    private static final long MB_20 = 20 * 1024 * 1024 ;
 }
