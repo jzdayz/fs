@@ -39,15 +39,15 @@ public final class HttpStaticFileServer {
     static int PORT = Integer.parseInt(System.getProperty("port", SSL? "8443" : "8080"));
 
     private static int randomPort(){
-        int port = 10000;
+        int port = 9999;
         int maxTry = 20000;
         int tried = 0;
         boolean gotIt = false;
         do {
-            try (ServerSocket socket = new ServerSocket(port)) {
+            try (ServerSocket socket = new ServerSocket(++port)) {
                 gotIt = true;
             } catch (Exception e) {/*ignore*/}
-        }while (!gotIt&&++tried<(maxTry+port));
+        }while (!gotIt&&++tried<(maxTry)&&port<60000);
         return port;
     }
 
