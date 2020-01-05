@@ -116,8 +116,6 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
         }
 
 
-
-        final boolean keepAlive = HttpUtil.isKeepAlive(request);
         final String uri = request.uri();
          String path = sanitizeUri(uri);
         if (uri.endsWith(".mp4-")){
@@ -170,8 +168,8 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
 
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
         setContentTypeHeader(response, file);
-        if (HttpHeaders.isKeepAlive(request)) {
-            response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        if (HttpUtil.isKeepAlive(request)) {
+            response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         }
 
         // Write the content.
@@ -179,20 +177,20 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
         ChannelFuture lastContentFuture;
 
         // Tell clients that Partial Requests are available.
-        response.headers().add(HttpHeaders.Names.ACCEPT_RANGES, HttpHeaders.Values.BYTES);
+        response.headers().add(HttpHeaderNames.ACCEPT_RANGES, HttpHeaderValues.BYTES);
 
-        String rangeHeader = request.headers().get(HttpHeaders.Names.RANGE);
-        System.out.println(HttpHeaders.Names.RANGE + " = " + rangeHeader);
+        String rangeHeader = request.headers().get(HttpHeaderNames.RANGE);
+        System.out.println(HttpHeaderNames.RANGE + " = " + rangeHeader);
         if (rangeHeader != null && rangeHeader.length() > 0) { // Partial Request
             PartialRequestInfo partialRequestInfo = getPartialRequestInfo(rangeHeader, fileLength);
 
             // Set Response Header
-            response.headers().add(HttpHeaders.Names.CONTENT_RANGE, HttpHeaders.Values.BYTES + " "
+            response.headers().add(HttpHeaderNames.CONTENT_RANGE, HttpHeaderValues.BYTES + " "
                     + partialRequestInfo.startOffset + "-" + partialRequestInfo.endOffset + "/" + fileLength);
             System.out.println(
-                    HttpHeaders.Names.CONTENT_RANGE + " : " + response.headers().get(HttpHeaders.Names.CONTENT_RANGE));
+                    HttpHeaderNames.CONTENT_RANGE + " : " + response.headers().get(HttpHeaderNames.CONTENT_RANGE));
 
-            HttpHeaders.setContentLength(response, partialRequestInfo.getChunkSize());
+            HttpUtil.setContentLength(response, partialRequestInfo.getChunkSize());
             System.out.println(HttpHeaders.Names.CONTENT_LENGTH + " : " + partialRequestInfo.getChunkSize());
 
             response.setStatus(HttpResponseStatus.PARTIAL_CONTENT);
@@ -203,7 +201,7 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
                     partialRequestInfo.getChunkSize()), ctx.newProgressivePromise());
         } else {
             // Set Response Header
-            HttpHeaders.setContentLength(response, fileLength);
+            HttpUtil.setContentLength(response, fileLength);
 
             // Write Response
             ctx.write(response);
@@ -230,7 +228,7 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
         });
 
         // Decide whether to close the connection or not.
-        if (!HttpHeaders.isKeepAlive(request)) {
+        if (!HttpUtil.isKeepAlive(request)) {
             // Close the connection when the whole content is written out.
             lastContentFuture.addListener(ChannelFutureListener.CLOSE);
         }
@@ -458,11 +456,12 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
         long startOffset = 0;
         long endOffset;
         try {
-            startOffset = Integer
-                    .parseInt(rangeHeader.trim().replace(HttpHeaders.Values.BYTES + "=", "").replace("-", ""));
+            startOffset = Long
+                    .parseLong(rangeHeader.trim().replace(HttpHeaderValues.BYTES + "=", "").replace("-", ""));
         } catch (NumberFormatException e) {
         }
-        endOffset = startOffset + fileLength;
+
+        endOffset = fileLength - startOffset > MB_10 ? startOffset + MB_10 : fileLength;
 
         if (endOffset >= fileLength) {
             endOffset = fileLength - 1;
@@ -474,4 +473,6 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
         partialRequestInfo.setChunkSize(chunkSize);
         return partialRequestInfo;
     }
+
+    private static final long MB_10 = 10 * 1024 * 1024 ;
 }

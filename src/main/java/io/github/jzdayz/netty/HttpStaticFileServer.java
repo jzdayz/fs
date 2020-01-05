@@ -53,6 +53,8 @@ public final class HttpStaticFileServer {
 
     public static void main(String[] args) throws Exception {
 
+
+
         if (args.length>0) {
             PORT = Integer.parseInt(args[0]);
         }else {
@@ -63,6 +65,7 @@ public final class HttpStaticFileServer {
         }else{
             System.setProperty("web.basePath",System.getProperty("user.dir"));
         }
+        System.setProperty("web.basePath","D:\\BaiduNetdiskDownload");
         // Configure SSL.
         final SslContext sslCtx;
         if (SSL) {
