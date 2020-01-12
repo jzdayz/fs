@@ -65,7 +65,7 @@ public final class HttpStaticFileServer {
         }else{
             System.setProperty("web.basePath",System.getProperty("user.dir"));
         }
-        System.setProperty("web.basePath","D:\\BaiduNetdiskDownload");
+//        System.setProperty("web.basePath","D:\\BaiduNetdiskDownload\\xinqiudazhan");
         // Configure SSL.
         final SslContext sslCtx;
         if (SSL) {
