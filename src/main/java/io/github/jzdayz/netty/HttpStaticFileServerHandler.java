@@ -142,7 +142,10 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
         }
 
         File file = new File(path);
-        if (file.isHidden() || !file.exists()) {
+        if (
+//                file.isHidden()
+//                ||
+                        !file.exists()) {
             this.sendError(ctx, NOT_FOUND);
             return;
         }
@@ -275,6 +278,9 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
         }
 
         // Convert to absolute path.
+        if(uri.equals(File.separator)){
+            uri="";
+        }
         return basePath + File.separator + uri;
     }
 
