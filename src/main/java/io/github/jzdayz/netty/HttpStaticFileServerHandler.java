@@ -301,7 +301,7 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
                 .append("<ul>")
                 .append("<li><a href=\"../\">..</a></li>\r\n");
 
-        for (File f : dir.listFiles()) {
+        for (File f : Objects.requireNonNull(dir.listFiles())) {
             if (f.isHidden() || !f.canRead()) {
                 continue;
             }
