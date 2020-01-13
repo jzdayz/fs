@@ -26,47 +26,49 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.URL;
+import java.net.UnknownHostException;
 
 
 @Slf4j
 public final class HttpStaticFileServer {
 
     static final boolean SSL = System.getProperty("ssl") != null;
-    static int PORT = Integer.parseInt(System.getProperty("port", SSL? "8443" : "8080"));
 
     private static int randomPort(){
         int port = 9999;
         int maxTry = 20000;
-        int tried = 0;
-        boolean gotIt = false;
+        boolean gotIt;
         do {
-            try (ServerSocket socket = new ServerSocket(++port)) {
-                gotIt = true;
-            } catch (Exception e) {/*ignore*/}
-        }while (!gotIt&&++tried<(maxTry)&&port<60000);
+            gotIt = checkPort(port);
+        }while ( !gotIt && ++port < maxTry );
         return port;
     }
 
+    private static boolean checkPort(int port) {
+        try (ServerSocket socket = new ServerSocket(++port)) {
+            return true;
+        } catch (Exception e) {/*ignore*/}
+        return false;
+    }
+
     public static void main(String[] args) throws Exception {
+        AppInfo appInfo = AppInfo.builder().build();
+        propertySet(appInfo);
+        argumentSet(args, appInfo);
+        setDefault(appInfo);
+        check(appInfo);
 
-
-
-        if (args.length>0) {
-            PORT = Integer.parseInt(args[0]);
-        }else {
-            PORT = randomPort();
-        }
-        if (args.length>1) {
-            System.setProperty("web.basePath", args[1]);
-        }else{
-            System.setProperty("web.basePath",System.getProperty("user.dir"));
-        }
-//        System.setProperty("web.basePath","D:\\BaiduNetdiskDownload\\xinqiudazhan");
-        // Configure SSL.
         final SslContext sslCtx;
         if (SSL) {
             SelfSignedCertificate ssc = new SelfSignedCertificate();
@@ -83,15 +85,74 @@ public final class HttpStaticFileServer {
             b.group(bossGroup, workerGroup)
              .channel(NioServerSocketChannel.class)
              .handler(new LoggingHandler(LogLevel.INFO))
-             .childHandler(new HttpStaticFileServerInitializer(sslCtx));
-
-            Channel ch = b.bind(PORT).sync().channel();
-            log.info("局域网: http://{}:{}",InetAddress.getLocalHost().getHostAddress(),PORT);
+             .childHandler(new HttpStaticFileServerInitializer(sslCtx, appInfo.getPath()));
+            Channel ch = b.bind(appInfo.getPort()).sync().channel();
+            log.info("局域网: http://{}:{}", lanAddress(),appInfo.getPort());
+            log.info("公网: http://{}:{}", nanAddress(),appInfo.getPort());
             ch.closeFuture().sync();
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+    }
+
+    private static String nanAddress() throws Exception{
+        URL url = new URL("http://checkip.amazonaws.com");
+        String ip = null;
+        try (
+                BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))
+                ){
+            ip = in.readLine(); //you get the IP as a String
+        }catch (Exception e){/*ignore*/}
+        return ip == null ? lanAddress() : ip ;
+    }
+
+    private static String lanAddress() throws UnknownHostException {
+        return InetAddress.getLocalHost().getHostAddress();
+    }
+
+    private static void check(AppInfo appInfo) {
+        if (!checkPort(appInfo.getPort())){
+            int port = randomPort();
+            log.warn(" old port : {} , new port : {} ",appInfo.getPort(),port);
+            appInfo.setPort(port);
+        }
+    }
+
+    private static void setDefault(AppInfo appInfo) {
+        if (appInfo.getPath() == null){
+            appInfo.setPath(System.getProperty("user.dir"));
+        }
+        if (appInfo.getPort() == 0){
+            appInfo.setPort(randomPort());
+        }
+    }
+
+    private static void propertySet(AppInfo appInfo) {
+        if (appInfo.getPath() == null){
+            appInfo.setPath(System.getProperty("path"));
+        }
+        if (appInfo.getPort() == 0){
+            appInfo.setPort(Integer.parseInt(System.getProperty("port","0")));
+        }
+    }
+
+    private static void argumentSet(String[] args, AppInfo appInfo) {
+        if (args.length == 1){
+            appInfo.setPort(Integer.parseInt(args[0]));
+        }else if (args.length == 2){
+            appInfo.setPort(Integer.parseInt(args[0]));
+            appInfo.setPath(args[1]);
+        }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class AppInfo{
+        private String path;
+        private int port;
     }
 
 }

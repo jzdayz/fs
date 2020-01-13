@@ -24,9 +24,11 @@ import io.netty.handler.ssl.SslContext;
 public class HttpStaticFileServerInitializer extends ChannelInitializer<SocketChannel> {
 
     private final SslContext sslCtx;
+    private final String basePath;
 
-    public HttpStaticFileServerInitializer(SslContext sslCtx) {
+    public HttpStaticFileServerInitializer(SslContext sslCtx, String basePath) {
         this.sslCtx = sslCtx;
+        this.basePath = basePath;
     }
 
     @Override
@@ -38,6 +40,6 @@ public class HttpStaticFileServerInitializer extends ChannelInitializer<SocketCh
         pipeline.addLast(new HttpServerCodec());
 //        pipeline.addLast(new HttpObjectAggregator(65536));
 //        pipeline.addLast(new ChunkedWriteHandler());
-        pipeline.addLast(new HttpStaticFileServerHandler());
+        pipeline.addLast(new HttpStaticFileServerHandler(basePath));
     }
 }

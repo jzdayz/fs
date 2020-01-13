@@ -21,7 +21,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
-import io.netty.util.internal.SystemPropertyUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -33,7 +32,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
@@ -97,9 +95,11 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
 
     private HttpRequest request;
 
-    private static final String basePath = System.getProperty("web.basePath", SystemPropertyUtil.get("user.dir"));
+    private final String basePath;
 
-    private static final AtomicBoolean ao = new AtomicBoolean(true);
+    public HttpStaticFileServerHandler(String basePath) {
+        this.basePath = basePath;
+    }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, HttpRequest request) throws Exception {
@@ -251,7 +251,7 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
 
     private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
 
-    private static String sanitizeUri(String uri) {
+    private String sanitizeUri(String uri) {
         // Decode the path.
         try {
             uri = URLDecoder.decode(uri, "UTF-8");
