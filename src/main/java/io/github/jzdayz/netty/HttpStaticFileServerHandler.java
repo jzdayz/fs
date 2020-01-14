@@ -15,22 +15,27 @@
  */
 package io.github.jzdayz.netty;
 
+import freemarker.template.TemplateException;
 import io.github.jzdayz.template.freemarker.Freemarker;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.activation.MimetypesFileTypeMap;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -127,8 +132,10 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
             response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
             Map<Object, Object> map = new HashMap<>();
             map.put("name", uri.substring(0, uri.length() - 1));
-            byte[] process = Freemarker.process(map, "file.html");
+            map.put("tittle", uri.substring(0, uri.length() - 1));
+            byte[] process = Freemarker.process(map, "video.html");
             ByteBuf byteBuf = ctx.alloc().buffer(process.length).writeBytes(process);
+            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, process.length);
             ctx.write(response);
             ctx.write(byteBuf);
             ctx.flush();
@@ -221,15 +228,15 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
             @Override
             public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
                 if (total < 0) { // total unknown
-                    log.error(future.channel() + " Transfer progress: " + progress);
+                    log.info(future.channel() + " Transfer progress: " + progress);
                 } else {
-                    log.error(future.channel() + " Transfer progress: " + progress + " / " + total);
+                    log.info(future.channel() + " Transfer progress: " + progress + " / " + total);
                 }
             }
 
             @Override
             public void operationComplete(ChannelProgressiveFuture future) {
-                log.error(future.channel() + " Transfer complete.");
+                log.info(future.channel() + " Transfer complete.");
             }
         });
 
@@ -243,10 +250,18 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
         if (ctx.channel().isActive()) {
             sendError(ctx, INTERNAL_SERVER_ERROR);
         }
+        handleException(cause);
+    }
+
+    private static void handleException(Throwable throwable){
+        if(Objects.equals(throwable.getMessage(),"Connection reset by peer")){
+            log.info("用户断开连接");
+            return;
+        }
+        log.error("handle ex ",throwable);
     }
 
     private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
@@ -286,42 +301,67 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
 
     private static final Pattern ALLOWED_FILE_NAME = Pattern.compile("[^-\\._]?[^<>&\\\"]*");
 
-    private void sendListing(ChannelHandlerContext ctx, File dir, String dirPath) {
-        StringBuilder buf = new StringBuilder()
-                .append("<!DOCTYPE html>\r\n")
-                .append("<html><head><meta charset='utf-8' /><title>")
-                .append("Listing of: ")
-                .append(dirPath)
-                .append("</title></head><body>\r\n")
+    private static final List<String> CLASS_NAME = Arrays.asList(
+            "table-active","table-primary","table-secondary","table-success","table-danger",
+            "table-warning","table-info","table-light","table-dark"
+    );
 
-                .append("<h3>Listing of: ")
-                .append(dirPath)
-                .append("</h3>\r\n")
+    private void sendListing(ChannelHandlerContext ctx, File dir, String dirPath) throws IOException, TemplateException {
+        List<FileNode> res = new ArrayList<>();
+//        StringBuilder buf = new StringBuilder()
+//                .append("<!DOCTYPE html>\r\n")
+//                .append("<html><head><meta charset='utf-8' /><title>")
+//                .append("Listing of: ")
+//                .append(dirPath)
+//                .append("</title></head><body>\r\n")
+//
+//                .append("<h3>Listing of: ")
+//                .append(dirPath)
+//                .append("</h3>\r\n")
+//
+//                .append("<ul>")
+//                .append("<li><a href=\"../\">..</a></li>\r\n");
 
-                .append("<ul>")
-                .append("<li><a href=\"../\">..</a></li>\r\n");
-
+        int i = 0;
         for (File f : Objects.requireNonNull(dir.listFiles())) {
             if (f.isHidden() || !f.canRead()) {
                 continue;
             }
+            if (i > CLASS_NAME.size() - 1 ){
+                i = 0 ;
+            }
 
             String name = f.getName();
+            FileNode fileNode = FileNode.builder()
+                    .name(name)
+                    .classStr(CLASS_NAME.get(i++))
+                    .path(f.getPath())
+                    .directory(f.isDirectory())
+                    .size(f.length())
+                    .href(name.endsWith(".mp4") ? name + "-" : name)
+                    .lastUpdate(LocalDateTime.ofInstant(Instant.ofEpochMilli(f.lastModified()), ZoneId.systemDefault())).build();
+
+            res.add(fileNode);
 //            if (!ALLOWED_FILE_NAME.matcher(name).matches()) {
 //                continue;
 //            }
 
-            buf.append("<li><a href=\"")
-                    .append(name.endsWith(".mp4") ? name + "-" : name)
-                    .append("\">")
-                    .append(name)
-                    .append("</a></li>\r\n");
+//            buf.append("<li><a href=\"")
+//                    .append(name.endsWith(".mp4") ? name + "-" : name)
+//                    .append("\">")
+//                    .append(name)
+//                    .append("</a></li>\r\n");
         }
 
-        buf.append("</ul></body></html>\r\n");
+//        buf.append("</ul></body></html>\r\n");
 
-        ByteBuf buffer = ctx.alloc().buffer(buf.length());
-        buffer.writeCharSequence(buf.toString(), CharsetUtil.UTF_8);
+        Map<String,Object> map = new HashMap<>();
+        map.put("fileNodes",res);
+        byte[] process = Freemarker.process(map, "index.html");
+
+
+        ByteBuf buffer = ctx.alloc().buffer(process.length);
+        buffer.writeBytes(process);
 
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, buffer);
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
@@ -480,4 +520,19 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
     }
 
     private static final long MB_20 = 20 * 1024 * 1024;
+
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    @Builder
+    public static class FileNode{
+        private String name;
+        private String path;
+        private LocalDateTime lastUpdate;
+        private double size;
+        private String href;
+        private boolean directory;
+        private String classStr;
+    }
 }

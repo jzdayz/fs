@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Files</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.4.1/superhero/bootstrap.min.css" rel="stylesheet" integrity="sha384-R/oa7KS0iDoHwdh4Gyl3/fU7pgvSCt7oyuQ79pkw+e+bMWD9dzJJa+Zqd+XJS0AD" crossorigin="anonymous">
+    <style>
+        table{
+            text-align: center;
+        }
+        tr:hover   {cursor:hand}
+    </style>
+</head>
+
+<body>
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th scope="col">名称</th>
+        <th scope="col">目录</th>
+        <th scope="col">文件大小</th>
+        <th scope="col">文件路径</th>
+        <th scope="col">最后修改时间</th>
+    </tr>
+    </thead>
+    <tbody>
+    <#list fileNodes as fileNode>
+        <tr class="${fileNode.classStr}">
+            <th scope="row"><a href="${fileNode.href}">${fileNode.name}</a></th>
+            <td>${fileNode.directory?string("是","否")}</td>
+            <td>${fileNode.directory?string("0字节",fileNode.size+"字节")}</td>
+            <td>${fileNode.path}</td>
+            <td>${fileNode.lastUpdate}</td>
+        </tr>
+    </#list>
+    </tbody>
+    <button type="button" class="btn btn-primary btn-lg btn-block" onclick="window.location.href='../'">cd ..</button>
+</table>
+</body>
+
+</html>

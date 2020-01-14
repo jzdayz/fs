@@ -67,6 +67,7 @@ public final class HttpStaticFileServer {
         propertySet(appInfo);
         argumentSet(args, appInfo);
         setDefault(appInfo);
+        debug(appInfo);
         check(appInfo);
 
         final SslContext sslCtx;
@@ -94,6 +95,10 @@ public final class HttpStaticFileServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+    }
+
+    private static void debug(AppInfo appInfo) {
+        appInfo.setPath("/Users/jzdayz/Downloads");
     }
 
     private static String nanAddress() throws Exception{
