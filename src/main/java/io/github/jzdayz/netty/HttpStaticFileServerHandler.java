@@ -341,6 +341,7 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
                     .href(name.endsWith(".mp4") ? name + "-" : name)
                     .lastUpdate(LocalDateTime.ofInstant(Instant.ofEpochMilli(f.lastModified()), ZoneId.systemDefault())).build();
 
+            fileNode.setHref(fileNode.isDirectory() ? fileNode.getHref() + "/" : fileNode.getHref());
             res.add(fileNode);
 //            if (!ALLOWED_FILE_NAME.matcher(name).matches()) {
 //                continue;
