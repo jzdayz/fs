@@ -98,7 +98,7 @@ public final class HttpStaticFileServer {
     }
 
     private static void debug(AppInfo appInfo) {
-        appInfo.setPath("/Users/jzdayz/Downloads");
+//        appInfo.setPath("/Users/jzdayz/Downloads");
     }
 
     private static String nanAddress() throws Exception{
