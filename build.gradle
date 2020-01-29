@@ -19,6 +19,10 @@ plugins {
     id 'maven-publish'
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
 
 
 apply plugin: "com.github.johnrengelman.shadow"

@@ -127,13 +127,22 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
         log.info(" uri : {} ", uri);
         String path = sanitizeUri(uri);
         log.info("resource path : {}", path);
-        if (uri.endsWith(".mp4-")) {
+        if (uri.contains(".mp4-")) {
+            QueryStringDecoder queryStringDecoder = new QueryStringDecoder(uri);
+            Map<String, List<String>> parameters = queryStringDecoder.parameters();
             HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
             response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
             Map<Object, Object> map = new HashMap<>();
-            map.put("name", uri.substring(0, uri.length() - 1));
-            map.put("tittle", uri.substring(0, uri.length() - 1));
-            byte[] process = Freemarker.process(map, "video.html");
+            String fileName = uri.substring(0, uri.lastIndexOf(".mp4")) + ".mp4";
+            map.put("name", fileName);
+            map.put("tittle", fileName);
+            String webModel = "simple.html";
+            if (!parameters.isEmpty()){
+                if (parameters.getOrDefault("model",Collections.emptyList()).contains("plyr")){
+                    webModel = "plyr.html";
+                }
+            }
+            byte[] process = Freemarker.process(map, webModel);
             ByteBuf byteBuf = ctx.alloc().buffer(process.length).writeBytes(process);
             response.headers().set(HttpHeaderNames.CONTENT_LENGTH, process.length);
             ctx.write(response);
@@ -274,9 +283,9 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
             throw new Error(e);
         }
 
-        if (uri.isEmpty() || uri.charAt(0) != '/') {
-            return null;
-        }
+//        if (uri.isEmpty() || uri.charAt(0) != '/') {
+//            return null;
+//        }
 
         // Convert file separators.
         uri = uri.replace('/', File.separatorChar);
@@ -295,6 +304,8 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
         // Convert to absolute path.
         if(uri.equals(File.separator)){
             uri="";
+        }else{
+            uri = uri.substring(1);
         }
         return basePath + File.separator + uri;
     }
@@ -363,6 +374,8 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
 
         ByteBuf buffer = ctx.alloc().buffer(process.length);
         buffer.writeBytes(process);
+
+        log.info("{}",new String(process,StandardCharsets.UTF_8));
 
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, buffer);
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");

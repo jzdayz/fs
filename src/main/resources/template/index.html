@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <title>Files</title>
@@ -26,7 +26,10 @@
     <tbody>
     <#list fileNodes as fileNode>
         <tr class="${fileNode.classStr}">
-            <th scope="row"><a href="${fileNode.href}">${fileNode.name}</a></th>
+            <th scope="row">
+                <a href="${fileNode.href}">${fileNode.name}</a>
+                <#if fileNode.href?contains(".mp4")><a href="${fileNode.href}?model=plyr">Plyr播放</a></#if>
+            </th>
             <td>${fileNode.directory?string("是","否")}</td>
             <td>${fileNode.directory?string("0字节",fileNode.size+"字节")}</td>
             <td>${fileNode.path}</td>

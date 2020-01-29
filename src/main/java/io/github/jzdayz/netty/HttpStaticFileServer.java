@@ -56,7 +56,7 @@ public final class HttpStaticFileServer {
     }
 
     private static boolean checkPort(int port) {
-        try (ServerSocket socket = new ServerSocket(++port)) {
+        try (ServerSocket socket = new ServerSocket(port)) {
             return true;
         } catch (Exception e) {/*ignore*/}
         return false;
