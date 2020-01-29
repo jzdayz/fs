@@ -31,7 +31,7 @@ apply plugin: "com.github.johnrengelman.shadow"
 repositories {
     mavenLocal()
     maven {
-        url = 'http://repo.maven.apache.org/maven2'
+        url = 'https://repo.maven.apache.org/maven2'
     }
 }
 
@@ -44,6 +44,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-simple:2.0.0-alpha1'
     implementation 'org.freemarker:freemarker:2.3.29'
     implementation 'io.undertow:undertow-core:2.0.28.Final'
+    implementation 'com.google.guava:guava:28.2-jre'
 }
 
 jar {

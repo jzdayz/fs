@@ -15,8 +15,10 @@
  */
 package io.github.jzdayz.netty;
 
+import com.google.common.net.MediaType;
 import freemarker.template.TemplateException;
 import io.github.jzdayz.template.freemarker.Freemarker;
+import io.github.jzdayz.util.Constant;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -131,15 +133,15 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
             QueryStringDecoder queryStringDecoder = new QueryStringDecoder(uri);
             Map<String, List<String>> parameters = queryStringDecoder.parameters();
             HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE, MediaType.HTML_UTF_8);
             Map<Object, Object> map = new HashMap<>();
             String fileName = uri.substring(0, uri.lastIndexOf(".mp4")) + ".mp4";
             map.put("name", fileName);
             map.put("tittle", fileName);
-            String webModel = "simple.html";
+            String webModel = Constant.Html.SIMPLE;
             if (!parameters.isEmpty()){
                 if (parameters.getOrDefault("model",Collections.emptyList()).contains("plyr")){
-                    webModel = "plyr.html";
+                    webModel = Constant.Html.PLYR;
                 }
             }
             byte[] process = Freemarker.process(map, webModel);
@@ -248,7 +250,6 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
                 log.info(future.channel() + " Transfer complete.");
             }
         });
-
         // Decide whether to close the connection or not.
         if (!HttpUtil.isKeepAlive(request)) {
             // Close the connection when the whole content is written out.
