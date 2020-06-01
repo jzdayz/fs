@@ -14,21 +14,25 @@
  * under the License.
  */
 package io.github.jzdayz.netty;
-
 import com.google.common.net.MediaType;
 import freemarker.template.TemplateException;
 import io.github.jzdayz.template.freemarker.Freemarker;
 import io.github.jzdayz.util.Constant;
+import io.github.jzdayz.util.Utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+import io.netty.handler.codec.http.multipart.HttpDataFactory;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.util.CharsetUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.xnio.IoUtils;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.*;
@@ -102,6 +106,8 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
 
     private HttpRequest request;
 
+    private static final HttpDataFactory factory = new DefaultHttpDataFactory(false);
+
     private final String basePath;
 
     public HttpStaticFileServerHandler(String basePath) {
@@ -125,6 +131,15 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
 
 
         String uri = request.uri();
+        if ("/upload".equals(uri)){
+
+
+//            HttpPostRequestDecoder httpDecoder = new HttpPostRequestDecoder(factory, request);
+//            httpDecoder.
+
+
+//            return
+        }
         uri = URLDecoder.decode(uri, StandardCharsets.UTF_8.name());
         log.info(" uri : {} ", uri);
         String path = sanitizeUri(uri);
@@ -153,6 +168,26 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Htt
             return;
 
         }
+
+        Set<String> classpath = new HashSet<>();
+        classpath.add("/fileUpload.html");
+        if(classpath.contains(uri)){
+            byte[] bytes;
+            try(InputStream resourceAsStream =
+                    this.getClass().getClassLoader().getResourceAsStream("template"+uri)){
+                bytes = Utils.toBytes(resourceAsStream);
+            }
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+            HttpUtil.setContentLength(response, bytes.length);
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html;charset=utf-8");
+            ctx.write(response);
+            ctx.write(ctx.alloc().buffer(bytes.length).writeBytes(bytes));
+            ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT).addListener(ChannelFutureListener.CLOSE);
+            return;
+        }
+
+
+
 
         if (path == null) {
             this.sendError(ctx, FORBIDDEN);
