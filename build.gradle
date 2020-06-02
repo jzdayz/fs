@@ -51,6 +51,9 @@ jar {
     manifest {
         attributes 'Main-Class': 'io.github.jzdayz.netty.HttpStaticFileServer'
     }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 group = 'io.github.jzdayz'
