@@ -17,16 +17,14 @@ buildscript {
 plugins {
     id 'java'
     id 'maven-publish'
+    id "io.spring.dependency-management" version "1.0.7.RELEASE"
 }
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
 
-
-
 apply plugin: "com.github.johnrengelman.shadow"
-
 
 repositories {
     mavenLocal()
@@ -45,6 +43,14 @@ dependencies {
     implementation 'org.freemarker:freemarker:2.3.29'
     implementation 'io.undertow:undertow-core:2.0.28.Final'
     implementation 'com.google.guava:guava:28.2-jre'
+    implementation 'io.projectreactor.netty:reactor-netty'
+    implementation 'org.eclipse.jetty:jetty-server:9.4.29.v20200521'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.projectreactor:reactor-bom:Californium-RELEASE"
+    }
 }
 
 jar {
