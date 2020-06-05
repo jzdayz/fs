@@ -14,7 +14,7 @@
 
 
 
-<div id="dropzone"><form action="/upload" class="dropzone needsclick dz-clickable" id="demo-upload">
+<div id="dropzone"><form action="/upload" class="dropzone needsclick dz-clickable" id="upload">
 
     <div class="dz-message needsclick">
         <button type="button" class="dz-button">拖入文件或者直接点击</button><br>
@@ -28,5 +28,12 @@
 </body>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/dropzone.js"></script>
+<script>
+    Dropzone.options.upload = {
+        paramName: "file", // The name that will be used to transfer the file
+        maxFilesize: 100000// MB
+    };
+
+</script>
 
 </html>
